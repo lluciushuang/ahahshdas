@@ -36,13 +36,45 @@
                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $product->id }}">
                             Delete
                         </button>
+                        
                     @endcan
+                    <!-- Add to Cart Trigger -->
+                  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addToCartModal{{ $product->id }}" @if($product->stock < 1) disabled @endif>
+                     <i class="fas fa-cart-plus me-1"></i> {{ $product->stock > 0 ? 'Add to Cart' : 'Out of Stock' }}
+                  </button>
+
+                  <!-- Add to Cart Modal -->
+                  <div class="modal fade" id="addToCartModal{{ $product->id }}" tabindex="-1" aria-labelledby="addToCartModalLabel{{ $product->id }}" aria-hidden="true">
+                     <div class="modal-dialog modal-dialog-centered modal-sm">
+                        <div class="modal-content">
+                           <div class="modal-header border-bottom-0 pb-0">
+                              <h5 class="modal-title fs-6 fw-bold text-truncate" id="addToCartModalLabel{{ $product->id }}">{{ $product->name }}</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                           </div>
+                           <form action="{{ route('add_to_cart', $product->id) }}" method="POST">
+                              @csrf
+                              <div class="modal-body text-center pt-2">
+                                 <p class="text-muted small mb-3">Available Stock: <strong class="{{ $product->stock < 5 ? 'text-danger' : 'text-success' }}">{{ $product->stock }}</strong></p>
+                                 <div class="input-group mb-4 mx-auto" style="max-width: 140px;">
+                                    <button class="btn btn-outline-secondary px-3" type="button" onclick="const input = this.nextElementSibling; if(input.value > 1) input.value--">-</button>
+                                    <input type="number" name="quantity" class="form-control text-center bg-white px-1" value="1" min="1" max="10" readonly>
+                                    <button class="btn btn-outline-secondary px-3" type="button" onclick="const input = this.previousElementSibling; const maxQty = {{ min(10, max(1, (int)$product->stock)) }}; if(input.value < maxQty) input.value++">+</button>
+                                 </div>
+                                 <button type="submit" class="btn btn-primary w-100 rounded-3">
+                                    Confirm Add
+                                 </button>
+                              </div>
+                           </form>
+                        </div>
+                     </div>
+                  </div>
                 </div>
             </div>
         </div>
 
         {{-- Modal Delete juga sebaiknya dibungkus agar tidak render di HTML jika tidak punya akses --}}
         @can('delete-product')
+        
         <div class="modal fade" id="deleteModal{{ $product->id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -67,6 +99,7 @@
             </div>
         </div>
         @endcan
+        
     @endforeach
     </div>
 @endsection
